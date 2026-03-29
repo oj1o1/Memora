@@ -2,7 +2,7 @@
   "routes": [
     {
       "src": "^/$",
-      "dest": "/landing/index.html"
+      "dest": "/dashboard/index.html"
     },
     {
       "src": "^/dashboard$",
