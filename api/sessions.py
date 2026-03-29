@@ -1,7 +1,7 @@
 """GET /api/sessions?project=&workspace=&limit=100 — Timeline grouped by date."""
 
 from http.server import BaseHTTPRequestHandler
-from api._utils import get_memory, check_auth, send_json, parse_query, handle_cors, parse_limit
+from memora.api_utils import get_memory, check_auth, send_json, parse_query, handle_cors, parse_limit
 
 
 class handler(BaseHTTPRequestHandler):

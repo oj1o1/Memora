@@ -1,7 +1,7 @@
 """GET /api/backend — Return current backend mode, workspace, and storage type."""
 
 from http.server import BaseHTTPRequestHandler
-from api._utils import send_json, handle_cors
+from memora.api_utils import send_json, handle_cors
 
 import os
 import sys

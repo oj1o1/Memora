@@ -1,7 +1,7 @@
 """GET /api/search?q=...&limit=20 — Full-text search decisions."""
 
 from http.server import BaseHTTPRequestHandler
-from api._utils import get_memory, check_auth, send_json, parse_query, handle_cors, parse_limit, paginated, MAX_QUERY_LENGTH, MAX_SEARCH_RESULTS
+from memora.api_utils import get_memory, check_auth, send_json, parse_query, handle_cors, parse_limit, paginated, MAX_QUERY_LENGTH, MAX_SEARCH_RESULTS
 
 
 class handler(BaseHTTPRequestHandler):

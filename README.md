@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Memora
 
 **Decision memory infrastructure for AI agent builders.**
@@ -502,3 +503,6 @@ Current version: **0.1.0**
 ## License
 
 MIT License
+=======
+# Memora
+>>>>>>> 4096f2b3e677ee22e996a83380a42834f727d440

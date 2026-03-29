@@ -2,7 +2,7 @@
 
 import os
 from http.server import BaseHTTPRequestHandler
-from api._utils import get_memory, check_auth, send_json, read_body, handle_cors
+from memora.api_utils import get_memory, check_auth, send_json, read_body, handle_cors
 
 
 class handler(BaseHTTPRequestHandler):

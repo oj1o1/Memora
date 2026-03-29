@@ -4,7 +4,7 @@ POST /api/memories  {summary, reasoning, ...}
 """
 
 from http.server import BaseHTTPRequestHandler
-from api._utils import get_memory, check_auth, send_json, read_body, parse_query, handle_cors, parse_limit, parse_offset, paginated
+from memora.api_utils import get_memory, check_auth, send_json, read_body, parse_query, handle_cors, parse_limit, parse_offset, paginated
 
 
 class handler(BaseHTTPRequestHandler):
