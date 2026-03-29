@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Memora — Decision memory for AI agents</title>
+  <meta name="description"
+    content="Memora records why your agents behave the way they do. Capture every agent trace, decision and 'why' — filtered on context and supporting an iterative approach." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0c0c0c;
+      --bg2: #111111;
+      --bg3: #161616;
+      --card: #181818;
+      --card2: #1e1e1e;
+      --border: #2a2a2a;
+      --border2: #333333;
+      --green: #4ade80;
+      --green-dim: #22c55e;
+      --green-glow: rgba(74, 222, 128, 0.15);
+      --text: #f5f5f5;
+      --text2: #a3a3a3;
+      --text3: #666666;
+      --tag-bg: #1a2a1a;
+      --tag-border: #2d4a2d;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      height: 56px;
+      background: rgba(12, 12, 12, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--green);
+      letter-spacing: -0.5px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 13.5px;
+      color: var(--text2);
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-ghost {
+      font-size: 13px;
+      color: var(--text2);
+      padding: 7px 16px;
+      border-radius: 6px;
+      transition: color 0.2s;
+    }
+
+    .btn-ghost:hover {
+      color: var(--text);
+    }
+
+    .btn-primary {
+      font-size: 13px;
+      font-weight: 600;
+      color: #000;
+      background: var(--green);
+      padding: 7px 18px;
+      border-radius: 6px;
+      transition: background 0.2s, transform 0.15s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background: #6ee7a0;
+      transform: translateY(-1px);
+    }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 140px 48px 100px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 400px;
+      background: radial-gradient(ellipse at center, rgba(74, 222, 128, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--green);
+      background: var(--tag-bg);
+      border: 1px solid var(--tag-border);
+      padding: 4px 12px;
+      border-radius: 100px;
+      margin-bottom: 28px;
+    }
+
+    .hero-tag::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.4;
+      }
+    }
+
+    .hero h1 {
+      font-size: clamp(36px, 5vw, 64px);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -2px;
+      max-width: 820px;
+      margin: 0 auto 24px;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: var(--green);
+    }
+
+    .hero p {
+      font-size: 17px;
+      color: var(--text2);
+      max-width: 520px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+
+    .hero-ctas {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .btn-outline {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      background: transparent;
+      border: 1px solid var(--border2);
+      padding: 10px 22px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .btn-outline:hover {
+      border-color: #555;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .btn-green {
+      font-size: 14px;
+      font-weight: 600;
+      color: #000;
+      background: var(--green);
+      border: none;
+      padding: 10px 22px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-green:hover {
+      background: #6ee7a0;
+      transform: translateY(-1px);
+    }
+
+    /* ── SECTION WRAPPER ── */
+    section {
+      padding: 80px 48px;
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 16px;
+    }
+
+    /* ── PROBLEM SECTION ── */
+    .problem {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .problem-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+
+    .problem h2 {
+      font-size: clamp(28px, 3vw, 40px);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      line-height: 1.15;
+      margin-bottom: 32px;
+    }
+
+    .problem-points {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .problem-points li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.5;
+    }
+
+    .problem-points li::before {
+      content: '→';
+      color: var(--green);
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .code-window {
+      background: #0f1a0f;
+      border: 1px solid #2d4a2d;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .code-window-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 12px 16px;
+      border-bottom: 1px solid #2d4a2d;
+      background: #0d160d;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .dot-red {
+      background: #ff5f57;
+    }
+
+    .dot-yellow {
+      background: #febc2e;
+    }
+
+    .dot-green {
+      background: #28c840;
+    }
+
+    .code-body {
+      padding: 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .code-line {
+      display: flex;
+      gap: 16px;
+    }
+
+    .code-num {
+      color: #3d5a3d;
+      min-width: 20px;
+      text-align: right;
+      user-select: none;
+    }
+
+    .code-key {
+      color: #7ec87e;
+    }
+
+    .code-str {
+      color: #ce9178;
+    }
+
+    .code-comment {
+      color: #4a6a4a;
+      font-style: italic;
+    }
+
+    .code-alert {
+      color: var(--green);
+      font-weight: bold;
+    }
+
+    /* ── FEATURES SECTION ── */
+    .features {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .features-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .features-header h2 {
+      font-size: clamp(28px, 3.5vw, 48px);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+    }
+
+    .features-header p {
+      color: var(--text2);
+      font-size: 16px;
+      margin-top: 12px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .feature-card {
+      background: var(--bg);
+      padding: 32px;
+      transition: background 0.2s;
+    }
+
+    .feature-card:hover {
+      background: var(--card);
+    }
+
+    .feature-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--green);
+      background: var(--tag-bg);
+      border: 1px solid var(--tag-border);
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+    }
+
+    .feature-card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: -0.3px;
+    }
+
+    .feature-card p {
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.65;
+    }
+
+    .feature-visual {
+      margin-top: 20px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 12px;
+      font-family: monospace;
+    }
+
+    .trace-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 0;
+      transition: background 0.15s;
+    }
+
+    .trace-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .trace-dot.green {
+      background: var(--green);
+    }
+
+    .trace-dot.yellow {
+      background: #facc15;
+    }
+
+    .trace-dot.red {
+      background: #f87171;
+    }
+
+    .trace-text {
+      color: var(--text2);
+    }
+
+    .trace-badge {
+      margin-left: auto;
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+
+    .trace-badge.ok {
+      background: #1a2a1a;
+      color: var(--green);
+    }
+
+    .trace-badge.warn {
+      background: #2a2200;
+      color: #facc15;
+    }
+
+    .trace-badge.err {
+      background: #2a1111;
+      color: #f87171;
+    }
+
+    .chart-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      height: 60px;
+      padding-top: 10px;
+    }
+
+    .chart-bar {
+      flex: 1;
+      background: var(--green-dim);
+      border-radius: 3px 3px 0 0;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+
+    .chart-bar:hover {
+      opacity: 1;
+    }
+
+    .chart-bar.high {
+      background: var(--green);
+      opacity: 1;
+    }
+
+    /* ── TESTIMONIAL / USE CASE ── */
+    .usecase {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .usecase-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .usecase-inner h2 {
+      font-size: clamp(22px, 2.5vw, 34px);
+      font-weight: 700;
+      letter-spacing: -0.8px;
+      margin-bottom: 8px;
+    }
+
+    .usecase-sub {
+      font-size: 14px;
+      color: var(--text2);
+      margin-bottom: 40px;
+    }
+
+    .usecase-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .usecase-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .usecase-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .usecase-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .usecase-meta {
+      font-size: 13px;
+    }
+
+    .usecase-name {
+      font-weight: 600;
+    }
+
+    .usecase-role {
+      color: var(--text3);
+      font-size: 12px;
+    }
+
+    .usecase-card p {
+      font-size: 13.5px;
+      color: var(--text2);
+      line-height: 1.65;
+      margin-bottom: 16px;
+    }
+
+    .usecase-trace {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .trace-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      padding: 3px 0;
+      color: var(--text2);
+    }
+
+    .trace-row .key {
+      color: var(--text3);
+    }
+
+    .trace-row .val {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .trace-row .val.green {
+      color: var(--green);
+    }
+
+    .trace-row .val.red {
+      color: #f87171;
+    }
+
+    /* ── PRICING ── */
+    .pricing {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .pricing-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .pricing-header h2 {
+      font-size: clamp(26px, 3vw, 42px);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+    }
+
+    .pricing-header p {
+      color: var(--text2);
+      font-size: 15px;
+      margin-top: 10px;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .plan-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      position: relative;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .plan-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--border2);
+    }
+
+    .plan-card.featured {
+      background: #0d1f0d;
+      border-color: var(--green-dim);
+    }
+
+    .plan-badge {
+      position: absolute;
+      top: -11px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #000;
+      background: var(--green);
+      padding: 3px 10px;
+      border-radius: 100px;
+    }
+
+    .plan-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .plan-price {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 4px;
+    }
+
+    .plan-price span {
+      font-size: 16px;
+      font-weight: 400;
+      color: var(--text2);
+    }
+
+    .plan-desc {
+      font-size: 13px;
+      color: var(--text2);
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .plan-cta {
+      display: block;
+      text-align: center;
+      padding: 10px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 24px;
+      border: 1px solid var(--border2);
+      color: var(--text2);
+      background: transparent;
+    }
+
+    .plan-cta:hover {
+      border-color: #555;
+      color: var(--text);
+    }
+
+    .plan-card.featured .plan-cta {
+      background: var(--green);
+      color: #000;
+      border-color: transparent;
+    }
+
+    .plan-card.featured .plan-cta:hover {
+      background: #6ee7a0;
+    }
+
+    .plan-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .plan-features li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text2);
+    }
+
+    .plan-features li::before {
+      content: '✓';
+      color: var(--green);
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    /* ── FOOTER CTA ── */
+    .footer-cta {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 100px 48px;
+    }
+
+    .footer-cta .section-label {
+      margin-bottom: 12px;
+    }
+
+    .footer-cta h2 {
+      font-size: clamp(28px, 3.5vw, 48px);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      max-width: 700px;
+      margin: 0 auto 16px;
+      line-height: 1.15;
+    }
+
+    .footer-cta p {
+      color: var(--text2);
+      font-size: 16px;
+      max-width: 500px;
+      margin: 0 auto 36px;
+      line-height: 1.65;
+    }
+
+    .email-form {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    .email-form input {
+      flex: 1;
+      padding: 11px 16px;
+      border-radius: 7px;
+      border: 1px solid var(--border2);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .email-form input:focus {
+      border-color: var(--green-dim);
+    }
+
+    .email-form input::placeholder {
+      color: var(--text3);
+    }
+
+    .email-form button {
+      padding: 11px 20px;
+      border-radius: 7px;
+      background: var(--green);
+      color: #000;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.2s;
+    }
+
+    .email-form button:hover {
+      background: #6ee7a0;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-logo {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .footer-links a {
+      font-size: 13px;
+      color: var(--text3);
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--text2);
+    }
+
+    .footer-copy {
+      font-size: 12px;
+      color: var(--text3);
+    }
+
+    /* ── ANIMATIONS ── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── INFO BAR ── */
+    .info-bar {
+      text-align: center;
+      padding: 12px;
+      background: #0d1f0d;
+      border-bottom: 1px solid var(--tag-border);
+      font-size: 12.5px;
+      color: var(--text2);
+    }
+
+    .info-bar a {
+      color: var(--green);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #333;
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #444;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- INFO BAR -->
+  <div class="info-bar">
+    🚀 New: Multi-agent trace correlation is now in beta — <a href="#">Learn more</a>
+  </div>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">Memora</div>
+    <ul class="nav-links">
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#features">Resources</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="#" class="btn-ghost">Log in</a>
+      <a href="#" class="btn-primary">Sign up →</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-tag">AI Observability Platform</div>
+    <h1>Memora records <em>why</em> your<br />agents behave the way<br />they do.</h1>
+    <p>OG tackles what changes in scale. Memora learns what causes a reasoning. Capture every trade-off, decision, and
+      "why" — filtered on context and supporting an iterative approach.</p>
+    <div class="hero-ctas">
+      <button class="btn-green">Explore demo</button>
+      <button class="btn-outline">View docs →</button>
+    </div>
+  </section>
+
+  <!-- PROBLEM -->
+  <section class="problem">
+    <div class="problem-inner">
+      <div class="fade-up">
+        <div class="section-label">WE CREATE AI</div>
+        <h2>Agent behavior breaks because reasoning disappears.</h2>
+        <ul class="problem-points">
+          <li>When an agent starts or changes behaviours, it's lost. And then, because the AI model no longer has this
+            context, there's no reasoning at all.</li>
+          <li>Debugging becomes guesswork app-wide</li>
+          <li>AI deployments lose developer trust</li>
+          <li>Production agents fail silently at scale</li>
+        </ul>
+      </div>
+      <div class="fade-up">
+        <div class="code-window">
+          <div class="code-window-header">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+            <span style="margin-left: 8px; font-size:11px; color: var(--text3);">agent_trace.log</span>
+          </div>
+          <div class="code-body">
+            <div class="code-line"><span class="code-num">1</span><span class="code-comment">// Why did agent reject
+                this request?</span></div>
+            <div class="code-line"><span class="code-num">2</span><span style="color:#666;">{"event": "decision",
+                ...</span></div>
+            <div class="code-line"><span class="code-num">3</span><span class="code-alert">⚠ reasoning: undefined</span>
+            </div>
+            <div class="code-line"><span class="code-num">4</span><span class="code-comment">// No trace. No context.
+                Nothing.</span></div>
+            <div class="code-line"><span class="code-num">5</span>&nbsp;</div>
+            <div class="code-line"><span class="code-num">6</span><span class="code-comment">// With Memora:</span>
+            </div>
+            <div class="code-line"><span class="code-num">7</span><span class="code-key">reasoning:</span> <span
+                class="code-str">"amount > threshold_50k"</span></div>
+            <div class="code-line"><span class="code-num">8</span><span class="code-key">policy:</span> <span
+                class="code-str">"refund_policy_v3"</span></div>
+            <div class="code-line"><span class="code-num">9</span><span class="code-key">confidence:</span> <span
+                style="color:#4ade80;">0.94</span></div>
+            <div class="code-line"><span class="code-num">10</span><span class="code-key">trace_id:</span> <span
+                class="code-str">"mem_8f2a91c"</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" style="padding: 80px 48px;">
+    <div class="features">
+      <div class="features-header fade-up">
+        <h2>Decision memory for AI agents.</h2>
+        <p>Infrastructure for how your agent builds, for the new generation of software.</p>
+      </div>
+      <div class="features-grid fade-up">
+
+        <!-- Card 1 -->
+        <div class="feature-card">
+          <div class="feature-tag">Context / Trace</div>
+          <h3>Decision Timelines</h3>
+          <p>Every action your agent takes gets a running log, including who changed what, when and with what effects.
+          </p>
+          <div class="feature-visual">
+            <div class="trace-line">
+              <div class="trace-dot green"></div>
+              <span class="trace-text">fetch_policy_rules</span>
+              <span class="trace-badge ok">OK</span>
+            </div>
+            <div class="trace-line">
+              <div class="trace-dot green"></div>
+              <span class="trace-text">evaluate_amount_threshold</span>
+              <span class="trace-badge ok">OK</span>
+            </div>
+            <div class="trace-line">
+              <div class="trace-dot yellow"></div>
+              <span class="trace-text">check_user_tier</span>
+              <span class="trace-badge warn">WARN</span>
+            </div>
+            <div class="trace-line">
+              <div class="trace-dot red"></div>
+              <span class="trace-text">apply_manual_override</span>
+              <span class="trace-badge err">FAIL</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="feature-card">
+          <div class="feature-tag">LOG CORRELATION</div>
+          <h3>Log why, not just what</h3>
+          <p>Memora logs stay real-time on memory details (data, date, time). Remarks stay only when memory data
+            changes.</p>
+          <div class="feature-visual">
+            <div class="chart-bars">
+              <div class="chart-bar" style="height:30%"></div>
+              <div class="chart-bar" style="height:55%"></div>
+              <div class="chart-bar" style="height:40%"></div>
+              <div class="chart-bar" style="height:70%"></div>
+              <div class="chart-bar high" style="height:90%"></div>
+              <div class="chart-bar" style="height:60%"></div>
+              <div class="chart-bar" style="height:75%"></div>
+              <div class="chart-bar" style="height:50%"></div>
+              <div class="chart-bar" style="height:65%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="feature-card">
+          <div class="feature-tag">Editor Radar</div>
+          <h3>Editor Radar</h3>
+          <p>New integrations with Claude and Claude Code. Neat integrations and plans in place, linked and integrated
+            directly in your coding process.</p>
+          <div class="feature-visual" style="font-size: 11px;">
+            <div style="display:flex; gap: 8px; align-items:center; margin-bottom: 6px;">
+              <div style="width:8px;height:8px;border-radius:50%;background:#4ade80;"></div>
+              <span style="color: var(--text2);">claude-3-sonnet connected</span>
+            </div>
+            <div style="color: var(--green); font-weight:600;">DECISION_LOG_START</div>
+            <div style="color: var(--text3);">→ trace context injected</div>
+            <div style="color: var(--text3);">→ memory snapshot recorded</div>
+            <div style="color: var(--green);">✓ memora.sdk v2.1.0</div>
+          </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="feature-card">
+          <div class="feature-tag">SEQUENTIAL WRITE</div>
+          <h3>SEQUENTIAL WRITE gets you</h3>
+          <p>Autonomous orchestration, processes tasks directly, sending each decision directly in your development
+            setup.</p>
+          <div class="feature-visual" style="font-size: 11px;">
+            <div style="color: var(--text3); margin-bottom: 4px;">$ memora init --project refund-agent</div>
+            <div style="color: var(--green);">✓ Agent context initialized</div>
+            <div style="color: var(--green);">✓ Decision hooks registered</div>
+            <div style="color: var(--green);">✓ Memory store connected</div>
+            <div style="color: var(--text3); margin-top:4px;">Listening for decisions...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- USE CASE -->
+  <section class="usecase">
+    <div class="usecase-inner fade-up">
+      <div class="section-label">SO LEARN IT, FIRST</div>
+      <h2>"Why does the refund agent reject requests above ₹50,000?"</h2>
+      <p class="usecase-sub">When engineers shouldn't have to ask the AI this to find this in Deploy:</p>
+      <div class="usecase-grid">
+        <!-- Card A -->
+        <div class="usecase-card">
+          <div class="usecase-header">
+            <div class="usecase-avatar" style="background: #1a3a2a; color: var(--green);">NB</div>
+            <div class="usecase-meta">
+              <div class="usecase-name">Nura Blake Engineer</div>
+              <div class="usecase-role">Senior Engineer</div>
+            </div>
+          </div>
+          <p>Revenue in your environment of based it really code review compliance that data, GH/GPT/AIs (data code) are
+            the cause not memory managing those.</p>
+          <div class="usecase-trace">
+            <div class="trace-row">
+              <span class="key">trigger</span>
+              <span class="val">amount_check</span>
+            </div>
+            <div class="trace-row">
+              <span class="key">threshold</span>
+              <span class="val red">₹50,000</span>
+            </div>
+            <div class="trace-row">
+              <span class="key">decision</span>
+              <span class="val red">REJECT</span>
+            </div>
+            <div class="trace-row">
+              <span class="key">policy_version</span>
+              <span class="val">v3.2.1</span>
+            </div>
+            <div class="trace-row">
+              <span class="key">confidence</span>
+              <span class="val green">0.97</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card B -->
+        <div class="usecase-card">
+          <div class="usecase-header">
+            <div class="usecase-avatar" style="background: #1a1a3a; color: #818cf8;">RL</div>
+            <div class="usecase-meta">
+              <div class="usecase-name">Renee Lander</div>
+              <div class="usecase-role">AI Infrastructure Lead</div>
+            </div>
+          </div>
+          <p>Before Memora we'd spend hours trying to reproduce agent decisions. Now every decision has full context —
+            policy version, input state, confidence score.</p>
+          <div class="usecase-trace">
+            <div class="trace-row">
+              <span class="key">Output:</span>
+              <span class="val">Refund</span>
+            </div>
+            <div class="trace-row">
+              <span class="key">Reason:</span>
+              <span class="val">Threshold</span>
+            </div>
+            <div class="trace-row">
+              <span class="key">Alternative</span>
+              <span class="val">---</span>
+            </div>
+            <div class="trace-row" style="margin-top: 6px; border-top: 1px solid var(--border); padding-top: 6px;">
+              <span class="key">Processing Cost</span>
+              <span class="val">-₹23.50</span>
+            </div>
+            <div class="trace-row">
+              <span class="key">Built by Memora</span>
+              <span class="val green">✓</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing" style="padding: 80px 48px;">
+    <div class="pricing">
+      <div class="pricing-header fade-up">
+        <h2>Transparent Pricing for Engineers.</h2>
+        <p>Start for free. Scale as your agents grow.</p>
+      </div>
+      <div class="pricing-grid fade-up">
+
+        <!-- Free -->
+        <div class="plan-card">
+          <div class="plan-name">Starter</div>
+          <div class="plan-price">Free</div>
+          <div class="plan-desc">For individual developers and side projects getting started with agent observability.
+          </div>
+          <a href="#" class="plan-cta">Install docs</a>
+          <ul class="plan-features">
+            <li>Local decision memory</li>
+            <li>Up to 5,000 traces/month</li>
+            <li>7-day trace retention</li>
+          </ul>
+        </div>
+
+        <!-- Pro -->
+        <div class="plan-card featured">
+          <div class="plan-badge">Most Popular</div>
+          <div class="plan-name">Pro</div>
+          <div class="plan-price">$15<span> /mo</span></div>
+          <div class="plan-desc">Your agents, smarter. Includes extended memory, live correlation and team access.</div>
+          <a href="#" class="plan-cta">Start Free Trial</a>
+          <ul class="plan-features">
+            <li>Everything in Starter</li>
+            <li>Unlimited trace storage</li>
+            <li>Real-time log correlation</li>
+            <li>Team collaboration tools</li>
+            <li>90-day trace retention</li>
+          </ul>
+        </div>
+
+        <!-- Custom -->
+        <div class="plan-card">
+          <div class="plan-name">Enterprise</div>
+          <div class="plan-price">Custom</div>
+          <div class="plan-desc">For teams running AI agents at scale with compliance requirements and custom SLAs.
+          </div>
+          <a href="#" class="plan-cta">Contact Sales</a>
+          <ul class="plan-features">
+            <li>Everything in Pro</li>
+            <li>Priority multi-agent tools</li>
+            <li>On-premise deployment</li>
+            <li>SOC 2 compliance</li>
+            <li>Dedicated support</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER CTA -->
+  <section class="footer-cta">
+    <div class="section-label">THE FOUNDATION</div>
+    <h2>Building infrastructure for governing AI agent decisions.</h2>
+    <p>Memora aims to be a foundational memory layer — its destination to be the system that ensures your production
+      agents behave within boundaries from the start.</p>
+    <p style="margin-top: -20px; margin-bottom: 36px; font-size: 14px; color: var(--text3);">Start recording agent
+      reasoning today.</p>
+    <div class="email-form">
+      <input type="email" id="email-signup" placeholder="Enter your engineering email" />
+      <button type="submit">Get Started</button>
+    </div>
+    <p style="margin-top: 14px; font-size: 12px; color: var(--text3);">No credit card required · Free forever plan
+      available</p>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">Memora</div>
+    <ul class="footer-links">
+      <li><a href="#">Privacy</a></li>
+      <li><a href="#">Terms</a></li>
+      <li><a href="#">Docs</a></li>
+      <li><a href="#">GitHub</a></li>
+      <li><a href="#">Status</a></li>
+      <li><a href="#">Contact</a></li>
+    </ul>
+    <div class="footer-copy">© 2026 Memora, Inc.</div>
+  </footer>
+
+  <script>
+    // Fade-in on scroll
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+    // Email form
+    document.querySelector('.email-form button').addEventListener('click', () => {
+      const val = document.getElementById('email-signup').value;
+      if (val && val.includes('@')) {
+        alert('🎉 You\'re on the list! We\'ll be in touch.');
+        document.getElementById('email-signup').value = '';
+      } else {
+        document.getElementById('email-signup').focus();
+      }
+    });
+  </script>
+</body>
+
+</html>

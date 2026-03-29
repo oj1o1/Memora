@@ -11,14 +11,30 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-VALID_TYPES = {"DECISION", "REJECTED", "NEXT", "BUG_FIXED", "CONTEXT"}
+VALID_TYPES = {
+    "DECISION", "REJECTED", "NEXT", "BUG_FIXED", "CONTEXT",
+    "ASSUMPTION", "TRADEOFF", "CONSTRAINT", "DEPENDENCY", "RISK",
+}
 
 
 def _default_db_path() -> str:
     env_path = os.getenv("MEMORA_DB_PATH")
     if env_path:
         return os.path.expanduser(env_path)
-    return os.path.join(os.path.expanduser("~"), ".memora", "decisions.db")
+    # Default: ~/.memora/decisions.db (works on any OS)
+    home_path = os.path.join(os.path.expanduser("~"), ".memora", "decisions.db")
+    # If home drive has space, use it
+    try:
+        import shutil
+        home_dir = os.path.expanduser("~")
+        free = shutil.disk_usage(home_dir).free
+        if free > 10 * 1024 * 1024:  # >10MB free
+            return home_path
+    except Exception:
+        return home_path
+    # Fallback: store next to the package itself
+    fallback = os.path.join(Path(__file__).parent.parent, ".memora", "decisions.db")
+    return fallback
 
 
 class DecisionStore:
@@ -46,6 +62,7 @@ class DecisionStore:
                 agent       TEXT NOT NULL DEFAULT '',
                 source      TEXT NOT NULL DEFAULT 'manual',
                 confidence  REAL NOT NULL DEFAULT 1.0,
+                workspace_id TEXT NOT NULL DEFAULT 'local',
                 created_at  TEXT NOT NULL,
                 updated_at  TEXT NOT NULL
             );
@@ -71,6 +88,11 @@ class DecisionStore:
         if "type" not in cols:
             cur.execute("ALTER TABLE decisions ADD COLUMN type TEXT NOT NULL DEFAULT 'DECISION'")
             cur.execute("CREATE INDEX IF NOT EXISTS idx_decisions_type ON decisions(type)")
+
+        # Migration: add workspace_id column
+        if "workspace_id" not in cols:
+            cur.execute("ALTER TABLE decisions ADD COLUMN workspace_id TEXT NOT NULL DEFAULT 'local'")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_decisions_workspace ON decisions(workspace_id)")
 
         cur.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='decisions_fts'")
         fts_row = cur.fetchone()
@@ -172,6 +194,7 @@ class DecisionStore:
         type: str = "",
         limit: int = 50,
         offset: int = 0,
+        workspace: str = "",
     ) -> list[dict]:
         clauses = []
         params: list = []
@@ -187,6 +210,9 @@ class DecisionStore:
         if type:
             clauses.append("type = ?")
             params.append(type.upper())
+        if workspace:
+            clauses.append("workspace_id = ?")
+            params.append(workspace)
 
         where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
         params.extend([limit, offset])
@@ -267,3 +293,7 @@ class DecisionStore:
 
     def close(self):
         self._conn.close()
+
+
+# Alias for hybrid architecture — LocalStore IS DecisionStore
+LocalStore = DecisionStore

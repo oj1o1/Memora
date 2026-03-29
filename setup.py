@@ -4,7 +4,7 @@ setup(
     name="memora",
     version="0.1.0",
     description="Decision memory layer for AI agent builders — captures WHY decisions were made.",
-    long_description=open("memora/README.md", encoding="utf-8").read(),
+    long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     author="Memora",
     url="https://github.com/YOUR_USERNAME/Memora",
@@ -22,6 +22,7 @@ setup(
         "click>=8.1.0",
         "rich>=13.0.0",
         "python-dotenv>=1.0.0",
+        "requests>=2.28.0",
     ],
     extras_require={
         "all": [
@@ -39,6 +40,9 @@ setup(
         ],
         "mcp": [
             "fastmcp>=2.0.0",
+        ],
+        "turso": [
+            "libsql-experimental>=0.0.1",
         ],
     },
     entry_points={

@@ -27,6 +27,8 @@
     --blue-dim: rgba(96,165,250,0.15);
     --cyan: #22d3ee;
     --cyan-dim: rgba(34,211,238,0.15);
+    --magenta: #c084fc;
+    --magenta-dim: rgba(192,132,252,0.15);
     --tag-bg: #1e1b3a;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -47,7 +49,8 @@
     border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
   .sidebar-header {
     padding: 1.2rem 1rem;
@@ -74,6 +77,7 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
+    flex-shrink: 0;
   }
   .nav-btn {
     background: transparent;
@@ -133,6 +137,11 @@
   .type-NEXT { background: var(--yellow-dim); color: var(--yellow); }
   .type-BUG_FIXED { background: var(--blue-dim); color: var(--blue); }
   .type-CONTEXT { background: var(--cyan-dim); color: var(--cyan); }
+  .type-ASSUMPTION { background: var(--yellow-dim); color: var(--yellow); }
+  .type-TRADEOFF { background: var(--magenta-dim); color: var(--magenta); }
+  .type-CONSTRAINT { background: var(--red-dim); color: var(--red); }
+  .type-DEPENDENCY { background: var(--blue-dim); color: var(--blue); }
+  .type-RISK { background: var(--red-dim); color: var(--red); }
 
   /* ── Main content ── */
   .main {
@@ -140,6 +149,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    min-width: 0;
   }
   .main-header {
     padding: 1rem 1.5rem;
@@ -152,7 +162,9 @@
   .main-content {
     flex: 1;
     overflow-y: auto;
+    overflow-x: auto;
     padding: 1.5rem;
+    -webkit-overflow-scrolling: touch;
   }
 
   /* ── Diff View (Screen 1) ── */
@@ -191,8 +203,12 @@
   }
   .diff-row {
     display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
     margin-bottom: 1rem;
+  }
+  .diff-from, .diff-to {
+    min-width: 200px;
   }
   .diff-from, .diff-to {
     flex: 1;
@@ -388,9 +404,9 @@
     align-items: flex-start;
     margin-bottom: 0.3rem;
   }
-  .decision-card .dc-summary { font-size: 0.82rem; font-weight: 600; flex: 1; }
+  .decision-card .dc-summary { font-size: 0.82rem; font-weight: 600; flex: 1; word-break: break-word; }
   .decision-card .dc-meta { font-size: 0.65rem; color: var(--text-muted); white-space: nowrap; margin-left: 0.8rem; }
-  .decision-card .dc-reasoning { font-size: 0.75rem; color: var(--text-dim); line-height: 1.4; }
+  .decision-card .dc-reasoning { font-size: 0.75rem; color: var(--text-dim); line-height: 1.4; word-break: break-word; }
   .decision-card .dc-tags { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-top: 0.4rem; }
   .tag {
     background: var(--tag-bg);
@@ -402,6 +418,17 @@
 
   /* ── All Decisions list view ── */
   .all-decisions { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .app { flex-direction: column; }
+    .sidebar { width: 100%; min-width: 100%; max-height: 40vh; border-right: none; border-bottom: 1px solid var(--border); }
+    .sidebar-timeline { max-height: 120px; }
+    .diff-row { flex-direction: column; }
+    .diff-from, .diff-to { min-width: 0; }
+    .main-header { flex-wrap: wrap; }
+    .header-search { max-width: 100%; }
+  }
 
   /* ── Search bar in header ── */
   .header-search {
@@ -425,9 +452,13 @@
   /* ── Type filter pills ── */
   .type-filters {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.4rem;
-    padding: 0 0.5rem 0.5rem;
+    padding: 0.5rem;
     border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
   }
   .type-pill {
     font-size: 0.65rem;
@@ -542,6 +573,10 @@
   <aside class="sidebar">
     <div class="sidebar-header">
       <h1><a href="/" style="color:inherit;text-decoration:none">MEMORA</a> <span>decision memory</span></h1>
+      <div style="display:flex;gap:0.5rem;margin-top:0.5rem;align-items:center">
+        <span id="backendBadge" style="display:inline-block;font-size:0.6rem;padding:2px 7px;border-radius:3px;font-weight:700;letter-spacing:0.5px;background:rgba(74,222,128,0.15);color:#4ade80">LOCAL</span>
+        <span id="workspaceBadge" style="display:inline-block;font-size:0.6rem;padding:2px 7px;border-radius:3px;font-weight:700;letter-spacing:0.5px;background:#1a1a28;color:#8888a0">local</span>
+      </div>
     </div>
     <div class="sidebar-stats" id="sidebarStats"></div>
     <nav class="sidebar-nav">
@@ -565,6 +600,11 @@
       <button class="type-pill type-NEXT" onclick="filterType('NEXT')">NEXT</button>
       <button class="type-pill type-BUG_FIXED" onclick="filterType('BUG_FIXED')">BUG_FIXED</button>
       <button class="type-pill type-CONTEXT" onclick="filterType('CONTEXT')">CONTEXT</button>
+      <button class="type-pill type-ASSUMPTION" onclick="filterType('ASSUMPTION')">ASSUMPTION</button>
+      <button class="type-pill type-TRADEOFF" onclick="filterType('TRADEOFF')">TRADEOFF</button>
+      <button class="type-pill type-CONSTRAINT" onclick="filterType('CONSTRAINT')">CONSTRAINT</button>
+      <button class="type-pill type-DEPENDENCY" onclick="filterType('DEPENDENCY')">DEPENDENCY</button>
+      <button class="type-pill type-RISK" onclick="filterType('RISK')">RISK</button>
     </div>
     <div class="sidebar-timeline" id="sidebarTimeline">
       <h3>Recent Activity</h3>
@@ -629,7 +669,8 @@ async function loadAll() {
     fetch(`${API}/decisions?limit=200`),
     fetch(`${API}/stats`),
   ]);
-  allDecisions = await dRes.json();
+  const dData = await dRes.json();
+  allDecisions = dData.results || dData;  // unwrap pagination envelope
   const stats = await sRes.json();
   renderSidebarStats(stats);
   renderSidebarTimeline();
@@ -946,7 +987,8 @@ async function globalSearchDo() {
   const q = document.getElementById('globalSearch').value.trim();
   if (!q) { loadAll(); return; }
   const res = await fetch(`${API}/decisions/search?q=${encodeURIComponent(q)}`);
-  allDecisions = await res.json();
+  const sData = await res.json();
+  allDecisions = sData.results || sData;  // unwrap pagination envelope
   renderSidebarTimeline();
   renderCurrentView();
 }
@@ -1019,7 +1061,25 @@ async function pollForChanges() {
 }
 setInterval(pollForChanges, 3000);
 
+// ── Backend badge ──
+async function loadBackendBadge() {
+  try {
+    const res = await fetch(`${API}/backend`);
+    if (res.ok) {
+      const data = await res.json();
+      const mode = data.mode || 'LOCAL';
+      const el = document.getElementById('backendBadge');
+      el.textContent = mode;
+      const colors = { LOCAL: ['rgba(74,222,128,0.15)','#4ade80'], REMOTE: ['rgba(34,211,238,0.15)','#22d3ee'], TURSO: ['rgba(192,132,252,0.15)','#c084fc'] };
+      const [bg, fg] = colors[mode] || colors.LOCAL;
+      el.style.background = bg;
+      el.style.color = fg;
+    }
+  } catch (e) { /* ignore */ }
+}
+
 // ── Init ──
+loadBackendBadge();
 loadAll();
 </script>
 </body>

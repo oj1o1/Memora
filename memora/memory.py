@@ -5,7 +5,7 @@ This is the main API that other components (MCP server, CLI, hooks) consume.
 
 from typing import Optional
 
-from memora.store import DecisionStore
+from memora.memory_backend import get_store
 from memora.extractor import DecisionExtractor
 
 
@@ -16,7 +16,7 @@ class MemoraMemory:
         api_key: Optional[str] = None,
         extractor_model: str = "llama-3.3-70b-versatile",
     ):
-        self.store = DecisionStore(db_path=db_path)
+        self.store = get_store(db_path=db_path)
         self._extractor: Optional[DecisionExtractor] = None
         self._api_key = api_key
         self._extractor_model = extractor_model
@@ -139,8 +139,8 @@ class MemoraMemory:
     def stats(self, project: str = "") -> dict:
         return self.store.stats(project=project)
 
-    def list_all(self, project: str = "", agent: str = "", tag: str = "", type: str = "", limit: int = 50, offset: int = 0) -> list[dict]:
-        return self.store.list_decisions(project=project, agent=agent, tag=tag, type=type, limit=limit, offset=offset)
+    def list_all(self, project: str = "", agent: str = "", tag: str = "", type: str = "", limit: int = 50, offset: int = 0, workspace: str = "") -> list[dict]:
+        return self.store.list_decisions(project=project, agent=agent, tag=tag, type=type, limit=limit, offset=offset, workspace=workspace)
 
     def close(self):
         self.store.close()

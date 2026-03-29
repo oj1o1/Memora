@@ -24,14 +24,27 @@ Usage (class-based — for more control):
     results = adapter.query("database choice")
 """
 
+import json
 import os
 from typing import Any, Optional
 
+from pathlib import Path
 from dotenv import load_dotenv
 
 from memora.memory import MemoraMemory
 
-load_dotenv()
+load_dotenv(Path(__file__).parent / ".env")
+
+# Auto-load saved cloud config
+_config_path = Path.home() / ".memora" / "config.json"
+if _config_path.exists():
+    try:
+        _cfg = json.loads(_config_path.read_text(encoding="utf-8"))
+        for _k in ("MEMORA_API_URL", "MEMORA_API_KEY"):
+            if _k in _cfg and not os.getenv(_k):
+                os.environ[_k] = _cfg[_k]
+    except Exception:
+        pass
 
 
 class MemoraAdapter:

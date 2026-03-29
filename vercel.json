@@ -1,0 +1,43 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/*.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "dashboard/index.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/backend",
+      "dest": "/api/backend.py"
+    },
+    {
+      "src": "/api/memories",
+      "dest": "/api/memories.py"
+    },
+    {
+      "src": "/api/sessions",
+      "dest": "/api/sessions.py"
+    },
+    {
+      "src": "/api/search",
+      "dest": "/api/search.py"
+    },
+    {
+      "src": "/api/stats",
+      "dest": "/api/stats.py"
+    },
+    {
+      "src": "/api/ask",
+      "dest": "/api/ask.py"
+    },
+    {
+      "src": "/dashboard",
+      "dest": "/dashboard/index.html"
+    }
+  ]
+}

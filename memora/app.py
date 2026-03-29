@@ -4,19 +4,66 @@ Run with: python -m memora.app
 """
 
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 from typing import Optional
 
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 
+from functools import wraps
+
 from memora.memory import MemoraMemory
 from memora.store import VALID_TYPES
+from memora.api_limits import (
+    parse_limit, parse_offset, paginated,
+    MAX_QUERY_LENGTH, MAX_SEARCH_RESULTS, MAX_REQUEST_BYTES,
+    RateLimiter,
+)
 
-load_dotenv()
+# Load .env from the memora package directory
+load_dotenv(Path(__file__).parent / ".env")
 
 app = Flask(__name__, static_folder=None)
 CORS(app)
+
+_rate_limiter = RateLimiter()
+
+
+def require_auth(f):
+    """Protect an endpoint with Bearer token auth.
+
+    Only enforced when MEMORA_API_KEY is set on the server.
+    If no key is configured, all requests are allowed (local dev mode).
+    """
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        server_key = os.getenv("MEMORA_API_KEY", "")
+        if not server_key:
+            return f(*args, **kwargs)
+        auth_header = request.headers.get("Authorization", "")
+        if not auth_header.startswith("Bearer "):
+            return jsonify({"error": "Missing Authorization header"}), 401
+        token = auth_header[7:]
+        if token != server_key:
+            return jsonify({"error": "Invalid API key"}), 401
+        return f(*args, **kwargs)
+    return decorated
+
+
+@app.before_request
+def check_request_limits():
+    """Reject oversized request bodies and rate-limit by IP."""
+    # Request size protection
+    content_length = request.content_length
+    if content_length and content_length > MAX_REQUEST_BYTES:
+        return jsonify({"error": "Request body too large", "max_bytes": MAX_REQUEST_BYTES}), 413
+
+    # Rate limiting
+    client_ip = request.remote_addr or "unknown"
+    if not _rate_limiter.is_allowed(client_ip):
+        return jsonify({"error": "Rate limit exceeded. Try again later."}), 429
+
 
 _memory: Optional[MemoraMemory] = None
 
@@ -43,19 +90,43 @@ def dashboard():
     return send_from_directory(dashboard_dir, "index.html")
 
 
+@app.route("/dashboard/cloud")
+def dashboard_cloud():
+    """Serve the cloud-compatible dashboard (same as Vercel deployment)."""
+    cloud_dir = os.path.join(os.path.dirname(__file__), "..", "dashboard")
+    return send_from_directory(os.path.abspath(cloud_dir), "index.html")
+
+
+@app.route("/api/backend", methods=["GET"])
+def api_backend():
+    from memora.memory_backend import get_backend_mode
+    mode = get_backend_mode()
+    storage_map = {"LOCAL": "sqlite", "REMOTE": "api", "TURSO": "cloud"}
+    return jsonify({
+        "mode": mode,
+        "workspace": os.getenv("MEMORA_WORKSPACE", "local" if mode == "LOCAL" else "default"),
+        "storage": storage_map.get(mode, "unknown"),
+        "memory_types": len(VALID_TYPES),
+        "api_version": "v1",
+    })
+
+
 @app.route("/api/decisions", methods=["GET"])
+@require_auth
 def api_list_decisions():
     project = request.args.get("project", "")
     agent = request.args.get("agent", "")
     tag = request.args.get("tag", "")
     dtype = request.args.get("type", "")
-    limit = int(request.args.get("limit", 50))
-    offset = int(request.args.get("offset", 0))
-    decisions = get_memory().list_all(project=project, agent=agent, tag=tag, type=dtype, limit=limit, offset=offset)
-    return jsonify(decisions)
+    workspace = request.args.get("workspace", "")
+    limit = parse_limit(request.args.get("limit"))
+    offset = parse_offset(request.args.get("offset"))
+    decisions = get_memory().list_all(project=project, agent=agent, tag=tag, type=dtype, limit=limit, offset=offset, workspace=workspace)
+    return jsonify(paginated(decisions, limit, offset))
 
 
 @app.route("/api/decisions", methods=["POST"])
+@require_auth
 def api_create_decision():
     data = request.get_json()
     if not data or "summary" not in data or "reasoning" not in data:
@@ -76,16 +147,21 @@ def api_create_decision():
 
 
 @app.route("/api/decisions/search", methods=["GET"])
+@require_auth
 def api_search_decisions():
     query = request.args.get("q", "")
-    limit = int(request.args.get("limit", 20))
     if not query:
         return jsonify({"error": "query parameter 'q' is required"}), 400
+    if len(query) > MAX_QUERY_LENGTH:
+        return jsonify({"error": f"Query too long (max {MAX_QUERY_LENGTH} chars)"}), 400
+    limit = parse_limit(request.args.get("limit"), default=20)
+    limit = min(limit, MAX_SEARCH_RESULTS)
     results = get_memory().recall(query, limit=limit)
-    return jsonify(results)
+    return jsonify(paginated(results, limit, 0))
 
 
 @app.route("/api/decisions/<decision_id>", methods=["GET"])
+@require_auth
 def api_get_decision(decision_id: str):
     result = get_memory().get_decision(decision_id)
     if result is None:
@@ -94,6 +170,7 @@ def api_get_decision(decision_id: str):
 
 
 @app.route("/api/decisions/<decision_id>", methods=["DELETE"])
+@require_auth
 def api_delete_decision(decision_id: str):
     ok = get_memory().delete_decision(decision_id)
     if not ok:
@@ -102,12 +179,14 @@ def api_delete_decision(decision_id: str):
 
 
 @app.route("/api/decisions/<decision_id>/links", methods=["GET"])
+@require_auth
 def api_get_links(decision_id: str):
     related = get_memory().get_related(decision_id)
     return jsonify(related)
 
 
 @app.route("/api/decisions/link", methods=["POST"])
+@require_auth
 def api_link_decisions():
     data = request.get_json()
     if not data or "from_id" not in data or "to_id" not in data:
@@ -121,6 +200,7 @@ def api_link_decisions():
 
 
 @app.route("/api/decisions/extract", methods=["POST"])
+@require_auth
 def api_extract_decisions():
     data = request.get_json()
     if not data or "text" not in data:
@@ -136,18 +216,23 @@ def api_extract_decisions():
 
 
 @app.route("/api/stats", methods=["GET"])
+@require_auth
 def api_stats():
     project = request.args.get("project", "")
     return jsonify(get_memory().stats(project=project))
 
 
 @app.route("/api/why", methods=["POST"])
+@require_auth
 def api_why():
     data = request.get_json()
     if not data or "question" not in data:
         return jsonify({"error": "question is required"}), 400
 
     question = data["question"]
+    if len(question) > MAX_QUERY_LENGTH:
+        return jsonify({"error": f"Question too long (max {MAX_QUERY_LENGTH} chars)"}), 400
+
     project = data.get("project", "")
 
     # Search for relevant decisions
@@ -201,10 +286,12 @@ def api_why():
 
 
 @app.route("/api/timeline", methods=["GET"])
+@require_auth
 def api_timeline():
     project = request.args.get("project", "")
-    limit = int(request.args.get("limit", 100))
-    decisions = get_memory().list_all(project=project, limit=limit)
+    workspace = request.args.get("workspace", "")
+    limit = parse_limit(request.args.get("limit"))
+    decisions = get_memory().list_all(project=project, workspace=workspace, limit=limit)
 
     # Group by date as "sessions"
     sessions = {}

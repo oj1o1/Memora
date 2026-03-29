@@ -3,7 +3,9 @@ FastMCP server exposing Memora as tool endpoints.
 Run with: python -m memora.server
 """
 
+import json
 import os
+from pathlib import Path
 from typing import Optional
 
 from dotenv import load_dotenv
@@ -11,7 +13,18 @@ from fastmcp import FastMCP
 
 from memora.memory import MemoraMemory
 
-load_dotenv()
+load_dotenv(Path(__file__).parent / ".env")
+
+# Auto-load saved cloud config
+_config_path = Path.home() / ".memora" / "config.json"
+if _config_path.exists():
+    try:
+        _cfg = json.loads(_config_path.read_text(encoding="utf-8"))
+        for _k in ("MEMORA_API_URL", "MEMORA_API_KEY"):
+            if _k in _cfg and not os.getenv(_k):
+                os.environ[_k] = _cfg[_k]
+    except Exception:
+        pass
 
 mcp = FastMCP(
     "Memora",

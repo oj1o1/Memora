@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "memora": {
+      "command": "python",
+      "args": ["-m", "memora.server"],
+      "cwd": "D:/Memora"
+    }
+  }
+}
