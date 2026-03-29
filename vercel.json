@@ -8,6 +8,10 @@
     {
       "src": "dashboard/index.html",
       "use": "@vercel/static"
+    },
+    {
+      "src": "landing/index.html",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -38,6 +42,10 @@
     {
       "src": "/dashboard",
       "dest": "/dashboard/index.html"
+    },
+    {
+      "src": "/",
+      "dest": "/landing/index.html"
     }
   ]
 }
