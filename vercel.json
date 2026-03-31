@@ -5,7 +5,7 @@
       "dest": "/landing/index.html"
     },
     {
-      "src": "^/dashboard$",
+      "src": "^/dashboard/?$",
       "dest": "/dashboard/index.html"
     },
     {
