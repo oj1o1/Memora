@@ -1,16 +1,6 @@
 {
-  "routes": [
-    {
-      "src": "^/$",
-      "dest": "/landing/index.html"
-    },
-    {
-      "src": "^/dashboard/?$",
-      "dest": "/dashboard/index.html"
-    },
-    {
-      "src": "^/api/(.*)",
-      "dest": "/api/$1.py"
-    }
+  "rewrites": [
+    { "source": "/", "destination": "/landing/index.html" },
+    { "source": "/dashboard", "destination": "/dashboard/index.html" }
   ]
 }
