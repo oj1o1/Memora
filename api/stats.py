@@ -6,8 +6,7 @@ from memora.api_utils import get_memory, check_auth, send_json, parse_query, han
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
-        if not check_auth(self):
-            return
+        # GET is public so the dashboard can load without auth
         params = parse_query(self)
         mem = get_memory()
         stats = mem.stats(project=params.get("project", ""))

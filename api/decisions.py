@@ -14,8 +14,7 @@ from memora.api_utils import (
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
-        if not check_auth(self):
-            return
+        # GET is public so the dashboard can load without auth
         params = parse_query(self)
 
         # Search mode: /api/decisions?search=query
