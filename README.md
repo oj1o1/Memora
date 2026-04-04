@@ -4,7 +4,7 @@
 
 Decision memory infrastructure for AI agent builders. Records the reasoning behind every engineering decision — so context is never lost when teams scale.
 
-[Live Demo](https://memora-one-olive.vercel.app) | [Dashboard](https://memora-one-olive.vercel.app/dashboard) | [PyPI](https://pypi.org/project/memora) *(coming soon)*
+[Live Demo](https://memora-one-olive.vercel.app) | [Dashboard](https://memora-one-olive.vercel.app/dashboard)
 
 ---
 

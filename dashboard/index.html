@@ -798,7 +798,7 @@ async function loadAll() {
     const dData = await dRes.json();
     decisions = dData.results || dData;
     stats = await sRes.json();
-  } catch (e) { /* API unavailable — use demo data */ }
+  } catch (e) { /* graceful offline fallback */ }
 
   if (!decisions.length) {
     decisions = DEMO_DECISIONS;
