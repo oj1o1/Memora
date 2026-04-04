@@ -78,23 +78,19 @@ def get_memory() -> MemoraMemory:
     return _memory
 
 
+# Serve from the project root landing/ and dashboard/ directories
+# (same files Vercel deploys — single source of truth)
+_project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+
 @app.route("/")
 def landing():
-    landing_dir = os.path.join(os.path.dirname(__file__), "landing")
-    return send_from_directory(landing_dir, "index.html")
+    return send_from_directory(os.path.join(_project_root, "landing"), "index.html")
 
 
 @app.route("/dashboard")
 def dashboard():
-    dashboard_dir = os.path.join(os.path.dirname(__file__), "dashboard")
-    return send_from_directory(dashboard_dir, "index.html")
-
-
-@app.route("/dashboard/cloud")
-def dashboard_cloud():
-    """Serve the cloud-compatible dashboard (same as Vercel deployment)."""
-    cloud_dir = os.path.join(os.path.dirname(__file__), "..", "dashboard")
-    return send_from_directory(os.path.abspath(cloud_dir), "index.html")
+    return send_from_directory(os.path.join(_project_root, "dashboard"), "index.html")
 
 
 @app.route("/api/backend", methods=["GET"])
