@@ -331,60 +331,110 @@
 
   /* ── Lineage Graph (Screen 4) ── */
   .lineage-container {
-    max-width: 700px;
+    max-width: 750px;
     margin: 0 auto;
+    position: relative;
+  }
+  .lineage-group {
+    margin-bottom: 1.5rem;
+  }
+  .lineage-group-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+    padding-left: 2.5rem;
+  }
+  .lineage-track {
+    display: flex;
+    gap: 0;
+  }
+  .lineage-trunk {
+    width: 2.5rem;
+    min-width: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+  }
+  .lineage-trunk::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border-light);
+  }
+  .lineage-group:last-child .lineage-trunk::before { bottom: 50%; }
+  .lineage-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+    position: relative;
+    z-index: 1;
+    margin-top: 1rem;
+    flex-shrink: 0;
+  }
+  .lineage-dot.dot-rejected { background: var(--red); box-shadow: 0 0 8px var(--red-dim); }
+  .lineage-dot.dot-fix { background: var(--blue); box-shadow: 0 0 8px var(--blue-dim); }
+  .lineage-dot.dot-risk { background: var(--yellow); box-shadow: 0 0 8px var(--yellow-dim); }
+  .lineage-dot.dot-next { background: var(--cyan); box-shadow: 0 0 8px var(--cyan-dim); }
+  .lineage-dot.dot-tradeoff { background: var(--yellow); }
+  .lineage-dot.dot-constraint { background: var(--red); }
+  .lineage-cards {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.3rem 0;
   }
   .lineage-node {
     position: relative;
-    padding: 0.8rem 1rem 0.8rem 2rem;
-    margin-left: 1rem;
-    border-left: 2px solid var(--border-light);
+    padding: 0;
+    margin: 0;
+    border: none;
   }
-  .lineage-node:last-child { border-left-color: transparent; }
-  .lineage-node::before {
-    content: '';
-    position: absolute;
-    left: -6px;
-    top: 1rem;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--border-light);
-    border: 2px solid var(--bg);
-  }
-  .lineage-node.change::before { background: var(--yellow); box-shadow: 0 0 8px var(--yellow-dim); }
-  .lineage-node.rejected::before { background: var(--red); }
-  .lineage-node.fix::before { background: var(--blue); }
   .lineage-node .ln-card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 0.8rem 1rem;
-    transition: border-color 0.15s;
+    padding: 0.7rem 1rem;
+    transition: border-color 0.15s, transform 0.1s;
     cursor: pointer;
   }
-  .lineage-node .ln-card:hover { border-color: var(--accent); }
-  .lineage-node.change .ln-card { border-color: rgba(250,204,21,0.3); }
+  .lineage-node .ln-card:hover { border-color: var(--accent); transform: translateX(2px); }
+  .lineage-node.rejected .ln-card { border-left: 3px solid var(--red); }
+  .lineage-node.change .ln-card { border-left: 3px solid var(--yellow); }
+  .lineage-node.fix .ln-card { border-left: 3px solid var(--blue); }
   .lineage-node .ln-summary {
     font-size: 0.82rem;
     font-weight: 600;
     color: var(--text);
   }
   .lineage-node .ln-reason {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: var(--text-dim);
-    margin-top: 0.3rem;
+    margin-top: 0.25rem;
+    line-height: 1.4;
   }
   .lineage-node .ln-meta {
     font-size: 0.65rem;
     color: var(--text-muted);
-    margin-top: 0.3rem;
+    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
-  .lineage-arrow {
-    margin-left: 1rem;
-    padding: 0.2rem 0 0.2rem 2rem;
-    font-size: 0.7rem;
+  .lineage-connector {
+    text-align: center;
     color: var(--text-muted);
+    font-size: 0.65rem;
+    padding: 0.1rem 0 0.1rem 2.5rem;
+    letter-spacing: 0.5px;
     border-left: 2px solid var(--border-light);
   }
 
@@ -565,6 +615,46 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
+
+  /* ── Try it live banner ── */
+  .try-banner {
+    background: linear-gradient(135deg, rgba(124,111,247,0.15), rgba(74,222,128,0.1));
+    border: 1px solid rgba(124,111,247,0.3);
+    border-radius: 8px;
+    padding: 0.7rem 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .try-banner-text {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+  }
+  .try-banner-text strong { color: var(--accent); }
+  .try-banner .btn-try {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+  }
+  .try-banner .btn-try:hover { opacity: 0.85; }
+  .try-banner-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0 0.3rem;
+  }
 </style>
 </head>
 <body>
@@ -613,6 +703,11 @@
 
   <!-- Main content -->
   <div class="main">
+    <div class="try-banner" id="tryBanner">
+      <div class="try-banner-text"><strong>Try it live</strong> &mdash; Click "+ New" to record a decision. It persists to the cloud and syncs across all connected agents.</div>
+      <button class="btn-try" onclick="showAddModal()">+ Record Decision</button>
+      <button class="try-banner-close" onclick="document.getElementById('tryBanner').style.display='none'">&times;</button>
+    </div>
     <div class="main-header">
       <h2 id="viewTitle">Reasoning Timeline</h2>
       <div class="header-search">
@@ -908,12 +1003,23 @@ function showDiffView(id) {
 
 // ── Screen 3: Why Query ──
 function renderQueryPanel(el) {
+  const examples = [
+    'Why did we choose SQLite?',
+    'What was rejected for IDE integration?',
+    'Why Turso over PlanetScale?',
+    'What bugs were fixed?',
+  ];
+  const exampleHtml = examples.map(q =>
+    `<button onclick="document.getElementById('queryInput').value='${q}';doQuery()" style="background:var(--surface);border:1px solid var(--border);color:var(--text-dim);padding:0.3rem 0.7rem;border-radius:5px;cursor:pointer;font-size:0.72rem;font-family:inherit;transition:border-color 0.15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">${q}</button>`
+  ).join('');
+
   el.innerHTML = `
     <div class="query-container">
       <div class="query-input-wrap">
-        <input type="text" id="queryInput" placeholder="Why did refund threshold change?" onkeydown="if(event.key==='Enter')doQuery()" />
+        <input type="text" id="queryInput" placeholder="Ask anything about past decisions..." onkeydown="if(event.key==='Enter')doQuery()" />
         <button onclick="doQuery()">Ask Memora</button>
       </div>
+      <div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.5rem">${exampleHtml}</div>
       <div class="query-answer" id="queryAnswer">
         <div class="qa-label">MEMORA ANSWER</div>
         <div class="qa-text" id="queryAnswerText"></div>
@@ -943,11 +1049,26 @@ async function doQuery() {
       body: JSON.stringify({ question }),
     });
     const data = await res.json();
-    textEl.textContent = data.answer || 'No answer available.';
 
-    if (data.decisions && data.decisions.length) {
+    if (data.answer && !data.answer.startsWith('Could not generate')) {
+      textEl.textContent = data.answer;
+    } else {
+      // Fallback: local search when AI is unavailable
+      const matches = localSearch(question);
+      if (matches.length) {
+        textEl.textContent = matches.map(d =>
+          `[${d.type}] ${d.summary}: ${d.reasoning}`
+        ).join('\n\n');
+      } else {
+        textEl.textContent = data.answer || 'No relevant decisions found.';
+      }
+      data.decisions = data.decisions || matches;
+    }
+
+    const decs = data.decisions || [];
+    if (decs.length) {
       let html = '<h4>Related Decisions</h4>';
-      data.decisions.forEach(d => {
+      decs.forEach(d => {
         html += `
           <div class="decision-card" onclick="showDiffView('${d.id}')" style="margin-bottom:0.5rem">
             <div class="dc-header">
@@ -960,8 +1081,37 @@ async function doQuery() {
       decEl.innerHTML = html;
     }
   } catch (e) {
-    textEl.textContent = 'Error: ' + e.message;
+    // Full fallback: search locally in loaded decisions
+    const matches = localSearch(question);
+    if (matches.length) {
+      textEl.textContent = matches.map(d =>
+        `[${d.type}] ${d.summary}: ${d.reasoning}`
+      ).join('\n\n');
+      let html = '<h4>Related Decisions</h4>';
+      matches.forEach(d => {
+        html += `
+          <div class="decision-card" onclick="showDiffView('${d.id}')" style="margin-bottom:0.5rem">
+            <div class="dc-header">
+              <div class="dc-summary"><span class="te-type type-${d.type || 'DECISION'}">${d.type || 'DECISION'}</span> ${esc(d.summary)}</div>
+              <div class="dc-meta">${(d.created_at || '').substring(0, 10)}</div>
+            </div>
+            <div class="dc-reasoning">${esc(d.reasoning)}</div>
+          </div>`;
+      });
+      decEl.innerHTML = html;
+    } else {
+      textEl.textContent = 'No relevant decisions found.';
+    }
   }
+}
+
+// ── Local search fallback ──
+function localSearch(query) {
+  const words = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+  return allDecisions.filter(d => {
+    const text = `${d.summary} ${d.reasoning} ${(d.tags||[]).join(' ')} ${d.type} ${d.agent||''}`.toLowerCase();
+    return words.some(w => text.includes(w));
+  }).slice(0, 5);
 }
 
 // ── Screen 4: Lineage Graph ──
@@ -971,27 +1121,73 @@ function renderLineage(el) {
     el.innerHTML = '<div class="empty-state">No decisions to visualize.</div>';
     return;
   }
-  // Show decisions in chronological order as a lineage
+  // Group by shared tags to show related decision chains
   const sorted = [...decisions].sort((a, b) => (a.created_at || '').localeCompare(b.created_at || ''));
 
-  let html = '<div class="lineage-container">';
-  sorted.forEach((d, i) => {
-    const isChange = ['REJECTED', 'BUG_FIXED'].includes(d.type);
-    const isRejected = d.type === 'REJECTED';
-    const cls = isChange ? (isRejected ? 'rejected' : 'change') : '';
-    const date = (d.created_at || '').substring(0, 10);
+  // Build tag-based clusters
+  const tagGroups = {};
+  sorted.forEach(d => {
+    const mainTag = (d.tags && d.tags[0]) || d.project || 'general';
+    if (!tagGroups[mainTag]) tagGroups[mainTag] = [];
+    tagGroups[mainTag].push(d);
+  });
 
-    if (i > 0) {
-      html += `<div class="lineage-arrow">&darr;</div>`;
+  // Merge small groups into nearest related group
+  const groups = {};
+  Object.entries(tagGroups).forEach(([tag, items]) => {
+    if (items.length === 1) {
+      // Try to merge with a group that shares a tag
+      const d = items[0];
+      const merged = Object.keys(groups).find(g =>
+        (d.tags || []).includes(g) || (d.project && g === d.project)
+      );
+      if (merged) { groups[merged].push(d); return; }
     }
-    html += `
-      <div class="lineage-node ${cls}">
-        <div class="ln-card" onclick="showDiffView('${d.id}')">
-          <div class="ln-summary"><span class="te-type type-${d.type || 'DECISION'}">${d.type || 'DECISION'}</span> ${esc(d.summary)}</div>
-          <div class="ln-reason">${esc(d.reasoning.substring(0, 120))}</div>
-          <div class="ln-meta">${date} ${d.agent ? '&middot; ' + esc(d.agent) : ''} ${d.project ? '&middot; ' + esc(d.project) : ''}</div>
-        </div>
-      </div>`;
+    if (!groups[tag]) groups[tag] = [];
+    groups[tag].push(...items);
+  });
+
+  let html = '<div class="lineage-container">';
+  const groupEntries = Object.entries(groups);
+
+  groupEntries.forEach(([tag, items], gi) => {
+    const dotType = items.some(d => d.type === 'REJECTED') ? 'dot-rejected' :
+                    items.some(d => d.type === 'BUG_FIXED') ? 'dot-fix' :
+                    items.some(d => d.type === 'RISK') ? 'dot-risk' :
+                    items.some(d => d.type === 'TRADEOFF') ? 'dot-tradeoff' : '';
+
+    html += `<div class="lineage-group">`;
+    html += `<div class="lineage-group-label">${esc(tag)}</div>`;
+    html += `<div class="lineage-track">`;
+    html += `<div class="lineage-trunk"><div class="lineage-dot ${dotType}"></div></div>`;
+    html += `<div class="lineage-cards">`;
+
+    items.forEach(d => {
+      const isRejected = d.type === 'REJECTED';
+      const isFix = d.type === 'BUG_FIXED';
+      const isChange = ['TRADEOFF', 'RISK', 'CONSTRAINT'].includes(d.type);
+      const cls = isRejected ? 'rejected' : isFix ? 'fix' : isChange ? 'change' : '';
+      const date = (d.created_at || '').substring(0, 10);
+
+      html += `
+        <div class="lineage-node ${cls}">
+          <div class="ln-card" onclick="showDiffView('${d.id}')">
+            <div class="ln-summary"><span class="te-type type-${d.type || 'DECISION'}">${d.type || 'DECISION'}</span> ${esc(d.summary)}</div>
+            <div class="ln-reason">${esc(d.reasoning.substring(0, 140))}</div>
+            <div class="ln-meta">
+              <span>${date}</span>
+              ${d.agent ? '<span>&middot; ' + esc(d.agent) + '</span>' : ''}
+              ${(d.tags || []).slice(0,3).map(t => '<span class="tag" style="font-size:0.6rem;padding:1px 5px">' + esc(t) + '</span>').join('')}
+            </div>
+          </div>
+        </div>`;
+    });
+
+    html += `</div></div></div>`;
+
+    if (gi < groupEntries.length - 1) {
+      html += `<div class="lineage-connector">&#x2502;</div>`;
+    }
   });
   html += '</div>';
   el.innerHTML = html;
