@@ -1028,7 +1028,7 @@ function renderAllDecisions(el) {
 async function globalSearchDo() {
   const q = document.getElementById('globalSearch').value.trim();
   if (!q) { loadAll(); return; }
-  const res = await fetch(`${API}/decisions/search?q=${encodeURIComponent(q)}`);
+  const res = await fetch(`${API}/decisions?search=${encodeURIComponent(q)}`);
   const sData = await res.json();
   allDecisions = sData.results || sData;  // unwrap pagination envelope
   renderSidebarTimeline();
@@ -1073,7 +1073,7 @@ async function doSave() {
 async function doDelete() {
   const id = document.getElementById('fId').value;
   if (!id || !confirm('Delete this decision?')) return;
-  await fetch(`${API}/decisions/${id}`, { method: 'DELETE' });
+  await fetch(`${API}/decisions?id=${id}`, { method: 'DELETE' });
   hideModal();
   loadAll();
 }

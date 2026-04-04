@@ -107,9 +107,29 @@ def api_backend():
     })
 
 
-@app.route("/api/decisions", methods=["GET"])
+@app.route("/api/decisions", methods=["GET", "DELETE"])
 @require_auth
 def api_list_decisions():
+    # DELETE by query param: /api/decisions?id=xxx
+    if request.method == "DELETE":
+        decision_id = request.args.get("id", "")
+        if not decision_id:
+            return jsonify({"error": "id parameter is required"}), 400
+        ok = get_memory().delete_decision(decision_id)
+        if not ok:
+            return jsonify({"error": "not found"}), 404
+        return jsonify({"deleted": True, "id": decision_id})
+
+    # Search mode: /api/decisions?search=query
+    search_q = request.args.get("search", "") or request.args.get("q", "")
+    if search_q:
+        if len(search_q) > MAX_QUERY_LENGTH:
+            return jsonify({"error": f"Query too long (max {MAX_QUERY_LENGTH} chars)"}), 400
+        limit = min(parse_limit(request.args.get("limit"), default=20), MAX_SEARCH_RESULTS)
+        results = get_memory().recall(search_q, limit=limit)
+        return jsonify(paginated(results, limit, 0))
+
+    # List mode
     project = request.args.get("project", "")
     agent = request.args.get("agent", "")
     tag = request.args.get("tag", "")
