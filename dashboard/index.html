@@ -663,15 +663,57 @@ let allDecisions = [];
 let currentView = 'timeline';
 let currentTypeFilter = '';
 
+// ── Demo data (shown when backend has no decisions) ──
+const DEMO_DECISIONS = [
+  {
+    id: 'demo-1', type: 'DECISION',
+    summary: 'Use BM25 retrieval over vector search',
+    reasoning: 'Vector embeddings performed poorly on short, keyword-heavy queries. BM25 gave 40% better recall for our use case with deterministic, reproducible results.',
+    tags: ['retrieval', 'search', 'bm25'], agent: 'Rahul',
+    alternatives: ['OpenAI ada-002', 'sentence-transformers'],
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'demo-2', type: 'TRADEOFF',
+    summary: 'Vector search failed on short queries',
+    reasoning: 'Tested sentence-transformers and OpenAI ada-002. Both degraded below 5-word queries. Switched to BM25 with FTS5 for consistent sub-10ms latency.',
+    tags: ['vector-search', 'performance', 'latency'], agent: 'Rahul',
+    alternatives: [],
+    created_at: new Date(Date.now() - 86400000).toISOString()
+  },
+  {
+    id: 'demo-3', type: 'CONSTRAINT',
+    summary: 'Client required deterministic responses',
+    reasoning: 'Enterprise client contract mandates reproducible outputs. Ruled out any non-deterministic ranking. All search results must be explainable and auditable.',
+    tags: ['enterprise', 'compliance', 'deterministic'], agent: 'Priya',
+    alternatives: [],
+    created_at: new Date(Date.now() - 172800000).toISOString()
+  }
+];
+
 // ── Data loading ──
 async function loadAll() {
-  const [dRes, sRes] = await Promise.all([
-    fetch(`${API}/decisions?limit=200`),
-    fetch(`${API}/stats`),
-  ]);
-  const dData = await dRes.json();
-  allDecisions = dData.results || dData;  // unwrap pagination envelope
-  const stats = await sRes.json();
+  let decisions = [];
+  let stats = { total: 0, tags: {}, types: {} };
+  try {
+    const [dRes, sRes] = await Promise.all([
+      fetch(`${API}/decisions?limit=200`),
+      fetch(`${API}/stats`),
+    ]);
+    const dData = await dRes.json();
+    decisions = dData.results || dData;
+    stats = await sRes.json();
+  } catch (e) { /* API unavailable — use demo data */ }
+
+  if (!decisions.length) {
+    decisions = DEMO_DECISIONS;
+    stats = {
+      total: decisions.length,
+      tags: { retrieval: 1, search: 1, bm25: 1, 'vector-search': 1, performance: 1, latency: 1, enterprise: 1, compliance: 1, deterministic: 1 },
+      types: { DECISION: 1, TRADEOFF: 1, CONSTRAINT: 1 }
+    };
+  }
+  allDecisions = decisions;
   renderSidebarStats(stats);
   renderSidebarTimeline();
   renderCurrentView();
