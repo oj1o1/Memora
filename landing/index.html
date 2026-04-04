@@ -939,7 +939,7 @@ results = mem.extract_and_store(<br>
   </div>
 
   <div class="mcp-panel active" id="panel-claude-code">
-    <div class="mcp-desc">Add to <strong>~/.claude/settings.json</strong> to give Claude Code access to your decision memory.</div>
+    <div class="mcp-desc">Add to <strong>.mcp.json</strong> in your project root, or <strong>~/.claude/settings.json</strong> for global access.</div>
     <div class="mcp-code-block" id="code-claude-code">
       <button class="copy-btn" onclick="copyMcp('claude-code')">Copy</button>
 {<br>
@@ -947,9 +947,8 @@ results = mem.extract_and_store(<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"memora"</span>: {<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"command"</span>: <span class="str">"python"</span>,<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"args"</span>: [<span class="str">"-m"</span>, <span class="str">"memora.server"</span>],<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"cwd"</span>: <span class="str">"D:/Memora"</span>,<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"env"</span>: {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"GROQ_API_KEY"</span>: <span class="str">"your-key-here"</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"GROQ_API_KEY"</span>: <span class="str">"your-groq-key"</span><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 &nbsp;&nbsp;&nbsp;&nbsp;}<br>
 &nbsp;&nbsp;}<br>
@@ -966,7 +965,9 @@ results = mem.extract_and_store(<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"memora"</span>: {<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"command"</span>: <span class="str">"python"</span>,<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"args"</span>: [<span class="str">"-m"</span>, <span class="str">"memora.server"</span>],<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"cwd"</span>: <span class="str">"D:/Memora"</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"env"</span>: {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"GROQ_API_KEY"</span>: <span class="str">"your-groq-key"</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 &nbsp;&nbsp;&nbsp;&nbsp;}<br>
 &nbsp;&nbsp;}<br>
 }
@@ -982,7 +983,9 @@ results = mem.extract_and_store(<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"memora"</span>: {<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"command"</span>: <span class="str">"python"</span>,<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"args"</span>: [<span class="str">"-m"</span>, <span class="str">"memora.server"</span>],<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"cwd"</span>: <span class="str">"D:/Memora"</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"env"</span>: {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="key">"GROQ_API_KEY"</span>: <span class="str">"your-groq-key"</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 &nbsp;&nbsp;&nbsp;&nbsp;}<br>
 &nbsp;&nbsp;}<br>
 }
@@ -995,21 +998,18 @@ results = mem.extract_and_store(<br>
       <button class="copy-btn" onclick="copyMcp('antigravity')">Copy</button>
 <span class="cmt"># pip install memora</span><br>
 <span class="key">from</span> memora.antigravity_adapter <span class="key">import</span> MemoraAdapter<br><br>
-adapter = MemoraAdapter(project=<span class="str">"refund-agent"</span>, agent=<span class="str">"Rahul"</span>)<br><br>
+adapter = MemoraAdapter(project=<span class="str">"my-agent"</span>)<br><br>
 <span class="cmt"># Record typed decisions</span><br>
 adapter.on_decision(<br>
-&nbsp;&nbsp;<span class="str">"Lower threshold to 50k"</span>,<br>
-&nbsp;&nbsp;reasoning=<span class="str">"Fraud spike in dataset"</span>,<br>
+&nbsp;&nbsp;<span class="str">"Use BM25 over vector search"</span>,<br>
+&nbsp;&nbsp;reasoning=<span class="str">"Better recall on short queries"</span>,<br>
 &nbsp;&nbsp;type=<span class="str">"DECISION"</span>,<br>
-&nbsp;&nbsp;tags=[<span class="str">"fraud"</span>, <span class="str">"threshold"</span>],<br>
+&nbsp;&nbsp;tags=[<span class="str">"search"</span>, <span class="str">"retrieval"</span>],<br>
 )<br><br>
 <span class="cmt"># Auto-extract from conversations</span><br>
 adapter.on_conversation_end(messages)<br><br>
-<span class="cmt"># Inject context into agent prompts</span><br>
-context = adapter.get_context(<span class="str">"threshold policy"</span>)<br><br>
-<span class="cmt"># Register as agent tools</span><br>
-tools = adapter.get_tool_definitions()<br>
-result = adapter.handle_tool_call(tool_name, tool_input)
+<span class="cmt"># Query decision memory</span><br>
+context = adapter.get_context(<span class="str">"search strategy"</span>)
     </div>
   </div>
 
@@ -1178,9 +1178,8 @@ const mcpConfigs = {
     "memora": {
       "command": "python",
       "args": ["-m", "memora.server"],
-      "cwd": "D:/Memora",
       "env": {
-        "GROQ_API_KEY": "your-key-here"
+        "GROQ_API_KEY": "your-groq-key"
       }
     }
   }
@@ -1190,7 +1189,9 @@ const mcpConfigs = {
     "memora": {
       "command": "python",
       "args": ["-m", "memora.server"],
-      "cwd": "D:/Memora"
+      "env": {
+        "GROQ_API_KEY": "your-groq-key"
+      }
     }
   }
 }`,
@@ -1199,25 +1200,25 @@ const mcpConfigs = {
     "memora": {
       "command": "python",
       "args": ["-m", "memora.server"],
-      "cwd": "D:/Memora"
+      "env": {
+        "GROQ_API_KEY": "your-groq-key"
+      }
     }
   }
 }`,
   'antigravity': `from memora.antigravity_adapter import MemoraAdapter
 
-adapter = MemoraAdapter(project="refund-agent", agent="Rahul")
+adapter = MemoraAdapter(project="my-agent")
 
 adapter.on_decision(
-    "Lower threshold to 50k",
-    reasoning="Fraud spike in dataset",
+    "Use BM25 over vector search",
+    reasoning="Better recall on short queries",
     type="DECISION",
-    tags=["fraud", "threshold"],
+    tags=["search", "retrieval"],
 )
 
 adapter.on_conversation_end(messages)
-context = adapter.get_context("threshold policy")
-tools = adapter.get_tool_definitions()
-result = adapter.handle_tool_call(tool_name, tool_input)`
+context = adapter.get_context("search strategy")`
 };
 
 function switchMcpTab(id) {
